@@ -21,6 +21,7 @@ class Ant():
         
         # Create a vector to store the nodes of the graph that are
         # yet to be visited. 
+        # yet to be visited by the ant. 
         self.nodes_to_visit = {}
         # Store all of the nodes that are not the starting node.  
         for i in range(0, self.graph.num_nodes):
@@ -53,7 +54,7 @@ class Ant():
             # mark the edge from the current node to the new node as used
             self.path_mat[self.curr_node][new_node] = 1
             # update the pheromone trail on the new edge
-            self.pheromone_updating_rule(self.curr_node, new_node)
+            self.local_pheromone_updating_rule(self.curr_node, new_node)
             self.curr_node = new_node
         # add the cost of moving to the new node to the path cost            
         self.path_cost += graph.delta(self.path_vec[-1], self.path_vec[0])
@@ -121,11 +122,13 @@ class Ant():
         del self.nodes_to_visit[max_node]
         return max_node
 
-    def pheromone_updating_rule(self, curr_node, next_node):
+    def local_pheromone_updating_rule(self, curr_node, next_node):
         """Update the pheromones on the tau matrix
 
         Update the amount of pheromone on the edge between the current node
-        and the node the ant is moving to
+        and the node the ant is moving to.
+        This is intended to avoid a partically strong edge being
+        chosen by all the ants
         """
         graph = self.colony.graph
         val = (1 - self.Rho) * graph.tau(curr_node, next_node) + (self.Rho * graph.tau0)
