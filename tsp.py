@@ -20,7 +20,6 @@ class Ant():
         self.Rho = 0.99
         
         # Create a vector to store the nodes of the graph that are
-        # yet to be visited. 
         # yet to be visited by the ant. 
         self.nodes_to_visit = {}
         # Store all of the nodes that are not the starting node.  
@@ -140,30 +139,43 @@ import sys
 
 
 
-class BigGroup:
+class AntColony:
     def __init__(self, graph, num_ants, num_iterations):
+        """ Set up the ant colony
+
+        graph -- the graph with the nodes and edges the ants will
+            traverse
+        num_ants -- number of ants in the colony
+        num_iterations -- number of iterations the optimizer should
+            run for
+        """
         self.graph = graph
         self.num_ants = num_ants
         self.num_iterations = num_iterations
         self.Alpha = 0.1
+        #reset the best values gained 
         self.reset()
 
     def reset(self):
-        self.bpc = sys.maxint
-        self.bpv = None
-        self.bpm = None
-        self.lbpi = 0
+        """Reset the optimizer."""
+        self.best_path_cost = sys.maxint
+        self.best_path_vec = None
+        self.best_path_mat = None
+        self.last_best_path_iteration = 0
 
     def start(self):
-        self.ants = self.c_workers()
+        """Start the optimizer."""
+        self.ants = self.create_ants()
         self.iter_counter = 0
-
+        # If it is not the last iteration, do an iteration
+        # and update the pheromone trails according to the
+        # best path.
         while self.iter_counter < self.num_iterations:
             self.iteration()
-            # Note that this will help refine the results future iterations.
-            self.global_updating_rule()
+            self.global_pheromone_updating_rule()
 
     def iteration(self):
+        """Carry out an iteration where all ants complete a tour"""
         self.avg_path_cost = 0
         self.ant_counter = 0
         self.iter_counter += 1
@@ -171,33 +183,44 @@ class BigGroup:
             ant.tour()
 
     def num_ants(self):
+        """Return the number of ants."""
         return len(self.ants)
 
     def num_iterations(self):
+        """Return the number of iterations."""
         return self.num_iterations
 
     def iteration_counter(self):
+        """Return the iteration."""
         return self.iter_counter
 
     def update(self, ant):
+        """Update the best path information"""
         print "Update called by %s" % (ant.ID,)
         self.ant_counter += 1
         self.avg_path_cost += ant.path_cost
-        if ant.path_cost < self.bpc:
-            self.bpc = ant.path_cost
-            self.bpm = ant.path_mat
-            self.bpv = ant.path_vec
-            self.lbpi = self.iter_counter
+        if ant.path_cost < self.best_path_cost:
+            self.best_path_cost = ant.path_cost
+            self.best_path_mat = ant.path_mat
+            self.best_path_vec = ant.path_vec
+            self.last_best_path_iteration = self.iter_counter
         if self.ant_counter == len(self.ants):
+            #if it is the final ant, calculate the average path cost
+            # and print the updated information to screen.
             self.avg_path_cost /= len(self.ants)
-            print "Best: %s, %s, %s, %s" % (
-                self.bpv, self.bpc, self.iter_counter, self.avg_path_cost,)
+            print "Best: %s, %s, %s, %s" % (self.best_path_vec, self.best_path_cost,
+                self.iter_counter, self.avg_path_cost,)
 
 
     def done(self):
+        """Return true if the required number of iterations are complete."""
         return self.iter_counter == self.num_iterations
 
-    def c_workers(self):
+    def create_ants(self):
+        """Return a vector of ants and resets the best path
+
+        Each ant is randomly given a start node
+        """
         self.reset()
         ants = []
         for i in range(0, self.num_ants):
@@ -206,15 +229,18 @@ class BigGroup:
 
         return ants
  
-    def global_updating_rule(self):
-        #can someone explain this
-        evaporation = 0
+    def global_pheromone_updating_rule(self):
+        """Update the pheromones on the shortest path."""
         deposition = 0
         for r in range(0, self.graph.num_nodes):
             for s in range(0, self.graph.num_nodes):
                 if r != s:
-                    delt_tau = self.bpm[r][s] / self.bpc
+                    # Find the inverse of the cost of the best path for
+                    # each edge. It is only non-zero for edges on the
+                    # best path.
+                    delt_tau = self.best_path_mat[r][s] / self.best_path_cost
                     evaporation = (1 - self.Alpha) * self.graph.tau(r, s)
+                    #Strengthen the pheromones on the edges on the best path.
                     deposition = self.Alpha * delt_tau
                     self.graph.update_tau(r, s, evaporation + deposition)
 
@@ -301,29 +327,30 @@ def main(argv):
 
     try:
         graph = GraphBit(nm, cm)
-        bpv = None
-        bpc = sys.maxint
+        best_path_vec = None
+        best_path_cost = sys.maxint
+        
         for i in range(0, nr):
             print "Repetition %s" % i
             graph.reset_tau()
-            workers = BigGroup(graph, na, ni)
+            workers = AntColony(graph, na, ni)
             print "Colony Started"
             workers.start()
-            if workers.bpc < bpc:
+            if workers.best_path_cost < best_path_cost:
                 print "Colony Path"
-                bpv = workers.bpv
-                bpc = workers.bpc
+                best_path_vec = workers.best_path_vec
+                best_path_cost = workers.best_path_cost
 
         print "\n------------------------------------------------------------"
         print "                     Results                                "
-        print "------------------------------------------------------------"
-        print "\nBest path = %s" % (bpv,)
+        print "------------------------------------------------------------"        
+        print "\nBest path = %s" % (best_path_vec,)
         city_vec = []
-        for node in bpv:
+        for node in best_path_vec:
             print cities[node] + " ",
             city_vec.append(cities[node])
-        print "\nBest path cost = %s\n" % (bpc,)
-        results = [bpv, city_vec, bpc]
+        print "\nBest path cost = %s\n" % (best_path_cost,)
+        results = [best_path_vec, city_vec, best_path_cost]
         pickle.dump(results, open(argv[2], 'w+'))
     except Exception, e:
         print "exception: " + str(e)
