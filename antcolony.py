@@ -3,6 +3,7 @@ import sys
 
 from ant import Ant
 
+
 class AntColony:
     def __init__(self, graph, num_ants, num_iterations):
         """ Set up the ant colony
@@ -27,7 +28,7 @@ class AntColony:
         self.best_path_mat = None
         self.last_best_path_iteration = 0
 
-    def start(self):
+    def start_optimizer(self):
         """Start the optimizer."""
         self.ants = self.create_ants()
         self.iter_counter = 0
