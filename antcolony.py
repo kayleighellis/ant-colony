@@ -21,7 +21,7 @@ class AntColony:
         self.Alpha = 0.1
         #reset the best values gained 
         self.reset()
-        #output.write("I CAN WRITE HERE")
+ 
 
     def reset(self):
         """Reset the optimizer."""
@@ -75,7 +75,7 @@ class AntColony:
             #if it is the final ant, calculate the average path cost
             # and print the updated information to screen.
             self.avg_path_cost /= len(self.ants)
-            self.output.write("I CAN WRITE HERE")
+
 
     
             print "Iteration %s: \nBest path yet: %s,\nPath cost: %s,\nAverage path cost: %s" % ( self.iter_counter, self.best_path_vec, self.best_path_cost, self.avg_path_cost,)
