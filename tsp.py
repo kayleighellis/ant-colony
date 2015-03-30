@@ -18,6 +18,7 @@ def main(argv):
     parser.add_argument("--Beta", type=float, default=1.0)
     parser.add_argument("--Q0", type=float, default=0.5)
     parser.add_argument("--Rho", type=float, default=0.99)
+    parser.add_argument("--Repetitions", type=int, default=1)
     parser.add_argument("output_file")
     args = parser.parse_args()
     Beta = args.Beta
@@ -28,11 +29,11 @@ def main(argv):
     if number_nodes <= 10:
         number_ants = 20
         number_iterations = 12
-        number_repetitions = 1
+        number_repetitions = args.Repetitions
     else:
         number_ants = 28
         number_iterations = 20
-        number_repetitions = 1
+        number_repetitions = args.Repetitions
 
     output = open("tspoutput.txt", "w")
     stuff = pickle.load(open(args.input_file, "r"))
