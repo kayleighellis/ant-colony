@@ -2,23 +2,26 @@ import math
 import random
 
 class Ant():
-    def __init__(self, ID, start_node, colony,output):
+    def __init__(self, ID, start_node, colony,output, Beta, Q0, Rho):
         self.output=output
         self.ID = ID
         self.start_node = start_node
         self.colony = colony
         self.curr_node = self.start_node
         self.graph = self.colony.graph
-        
+        self.Beta = Beta
+        self.Q0 = Q0
+        self.Rho = Rho
         # Create a vector to store the path this ant takes through the graph.
         self.path_vec = []
         self.path_vec.append(self.start_node)
         self.path_cost = 0
         
         # Decide on the parameters for the optimizer.
-        self.Beta = 1.0
-        self.Q0 = 0.5
-        self.Rho = 0.99
+        # self.Beta = 1.0
+        #self.Q0 = 0.5
+        #self.Rho = 0.99
+
         
         # Create a vector to store the nodes of the graph that are
         # yet to be visited by the ant. 
@@ -61,7 +64,7 @@ class Ant():
         # update the best values the ants have found so far
         self.colony.update(self)
         # update the initial values 
-        self.__init__(self.ID, self.start_node, self.colony,self.output)
+        self.__init__(self.ID, self.start_node, self.colony,self.output, self.Beta, self.Q0, self.Rho)
 
     def end(self):
         """Return false if there are nodes to visit."""

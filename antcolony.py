@@ -5,7 +5,7 @@ from ant import Ant
 
 
 class AntColony:
-    def __init__(self, graph, num_ants, num_iterations,output):
+    def __init__(self, graph, num_ants, num_iterations,output, Beta, Q0, Rho):
         """ Set up the ant colony
 
         graph -- the graph with the nodes and edges the ants will
@@ -14,6 +14,9 @@ class AntColony:
         num_iterations -- number of iterations the optimizer should
             run for
         """
+        self.Beta = Beta
+        self.Q0 = Q0
+        self.Rho = Rho
         self.output = output
         self.graph = graph
         self.num_ants = num_ants
@@ -93,7 +96,7 @@ class AntColony:
         self.reset()
         ants = []
         for i in range(0, self.num_ants):
-            ant = Ant(i, random.randint(0, self.graph.num_nodes - 1), self,self.output)
+            ant = Ant(i, random.randint(0, self.graph.num_nodes - 1), self,self.output, self.Beta, self.Q0, self.Rho)
             ants.append(ant)
 
         return ants
