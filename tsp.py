@@ -2,15 +2,16 @@ from ant import Ant
 from antcolony import AntColony
 
 class GraphBit:
-    def __init__(self, num_nodes, delta_mat, tau_mat=None):
+    def __init__(self, num_nodes, delta_mat, output, tau_mat=None):
         """Set up the graph
 
         num_nodes -- number of nodes in the graph
         delta_mat -- matrix showing the length between nodes
         tau_mat -- matrix to hold the pheromone trail between nodes
 
-        """  
-        print len(delta_mat)
+        """
+        self.output = output
+        self.output.write("Delta matrix length = %s\n" % (len(delta_mat),))
         if len(delta_mat) != num_nodes:
             raise Exception("len(delta) != num_nodes")
         self.num_nodes = num_nodes
@@ -23,7 +24,7 @@ class GraphBit:
                 self.tau_mat.append([0] * num_nodes)
 
     def delta(self, r, s):
-        """Return the length between nodes r and s.""""
+        """Return the length between nodes r and s."""
         return self.delta_mat[r][s]
 
     def tau(self, r, s):
@@ -47,8 +48,8 @@ class GraphBit:
         """
         avg = self.average_delta()
         self.tau0 = 1.0 / (self.num_nodes * 0.5 * avg)
-        print "Average = %s" % (avg,)
-        print "Tau0 = %s" % (self.tau0)
+        output.write("Average = %s\n" % (avg,))
+        self.output.write("Tau0 = %s\n" % (self.tau0))
         for r in range(0, self.num_nodes):
             for s in range(0, self.num_nodes):
                 self.tau_mat[r][s] = self.tau0
@@ -79,6 +80,7 @@ import traceback
 
 
 def main(argv):
+    global output
     number_nodes = 10
 
     if len(argv) >= 3 and argv[0]:
@@ -91,9 +93,10 @@ def main(argv):
     else:
         number_ants = 28
         number_iterations = 20
-        number_repititions = 1
+        number_repetitions = 1
 
-RENAME THIS
+
+    output = open("tspoutput.txt", "w")
     stuff = pickle.load(open(argv[1], "r"))
     cities = stuff[0]
     edge_cost_mat = stuff[1]
@@ -110,23 +113,24 @@ RENAME THIS
 
     try:
         #create a graph from the read file 
-        graph = GraphBit(number_nodes, edge_cost_mat)
+        graph = GraphBit(number_nodes, edge_cost_mat, output)
         best_path_vec = None
         best_path_cost = sys.maxint
         
         for i in range(0, number_repetitions):
+            output.write("Repetition %s\n" % i)
             print "Repetition %s" % i
             # reset the amount of pheromone trail on edges
             # at the start of each iteration.
             graph.reset_tau()
             # Create the colony of ant workers.
-            workers = AntColony(graph, number_ants, number_iterations)
-            print "Colony Started"
+            workers = AntColony(graph, number_ants, number_iterations,output)
+            output.write("Colony Started\n")
             # Start the optimization on the workers colony.
             workers.start_optimizer()
             # Update the best path if the current path costs less
             if workers.best_path_cost < best_path_cost:
-                print "Colony Path"
+                output.write("Colony Path\n")
                 best_path_vec = workers.best_path_vec
                 best_path_cost = workers.best_path_cost
 
@@ -144,6 +148,7 @@ RENAME THIS
     except Exception, e:
         print "exception: " + str(e)
         traceback.print_exc()
+        output.close()
 
 
 if __name__ == "__main__":

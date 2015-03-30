@@ -5,7 +5,7 @@ from ant import Ant
 
 
 class AntColony:
-    def __init__(self, graph, num_ants, num_iterations):
+    def __init__(self, graph, num_ants, num_iterations,output):
         """ Set up the ant colony
 
         graph -- the graph with the nodes and edges the ants will
@@ -14,12 +14,14 @@ class AntColony:
         num_iterations -- number of iterations the optimizer should
             run for
         """
+        self.output = output
         self.graph = graph
         self.num_ants = num_ants
         self.num_iterations = num_iterations
         self.Alpha = 0.1
         #reset the best values gained 
         self.reset()
+        #output.write("I CAN WRITE HERE")
 
     def reset(self):
         """Reset the optimizer."""
@@ -61,7 +63,7 @@ class AntColony:
 
     def update(self, ant):
         """Update the best path information"""
-        print "Update called by %s" % (ant.ID,)
+        self.output.write("Update called by %s\n" % (ant.ID,))
         self.ant_counter += 1
         self.avg_path_cost += ant.path_cost
         if ant.path_cost < self.best_path_cost:
@@ -73,8 +75,10 @@ class AntColony:
             #if it is the final ant, calculate the average path cost
             # and print the updated information to screen.
             self.avg_path_cost /= len(self.ants)
-            print "Best: %s, %s, %s, %s" % (self.best_path_vec, self.best_path_cost,
-                self.iter_counter, self.avg_path_cost,)
+            self.output.write("I CAN WRITE HERE")
+
+    
+            print "Iteration %s: \nBest path yet: %s,\nPath cost: %s,\nAverage path cost: %s" % ( self.iter_counter, self.best_path_vec, self.best_path_cost, self.avg_path_cost,)
 
 
     def done(self):
@@ -89,7 +93,7 @@ class AntColony:
         self.reset()
         ants = []
         for i in range(0, self.num_ants):
-            ant = Ant(i, random.randint(0, self.graph.num_nodes - 1), self)
+            ant = Ant(i, random.randint(0, self.graph.num_nodes - 1), self,self.output)
             ants.append(ant)
 
         return ants

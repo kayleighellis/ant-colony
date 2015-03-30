@@ -2,7 +2,8 @@ import math
 import random
 
 class Ant():
-    def __init__(self, ID, start_node, colony):
+    def __init__(self, ID, start_node, colony,output):
+        self.output=output
         self.ID = ID
         self.start_node = start_node
         self.colony = colony
@@ -37,9 +38,9 @@ class Ant():
 
 
     def tour(self):
-        """ Carry out the next stage of a tour.
+        """Carry out the next stage of a tour.
 
-        Dcides and store the next node the ant will move 
+        Decides and store the next node the ant will move 
         to on it's tour of the graph and updates the information
         on the path and the pheromone trail.
         """
@@ -60,10 +61,10 @@ class Ant():
         # update the best values the ants have found so far
         self.colony.update(self)
         # update the initial values 
-        self.__init__(self.ID, self.start_node, self.colony)
+        self.__init__(self.ID, self.start_node, self.colony,self.output)
 
     def end(self):
-        """ return false if there are nodes to visit"""
+        """Return false if there are nodes to visit."""
         return not self.nodes_to_visit
 
        
@@ -79,7 +80,7 @@ class Ant():
         # pheromone on a trail and the distance between the current
         # node and the next
         if q < self.Q0:
-            print "Exploitation"
+            self.output.write("Exploitation\n")
             max_val = -1
             val = None
             # look at the nodes that have not been visited yet to
@@ -97,7 +98,7 @@ class Ant():
         else:
             # the next node is chosen so it has a probability that it
             # has a short edge and high pheromone trail  
-            print "Exploration"
+            self.output.write("Exploration\n")
             sum = 0
             node = -1
             for node in self.nodes_to_visit.values():
@@ -107,11 +108,11 @@ class Ant():
             if sum == 0:
                 raise Exception("sum = 0")
             avg = sum / len(self.nodes_to_visit)
-            print "avg = %s" % (avg,)
+            self.output.write("avg = %s\n" % (avg,))
             for node in self.nodes_to_visit.values():
                 p = graph.tau(curr_node, node) * math.pow(graph.etha(curr_node, node), self.Beta)
                 if p > avg:
-                    print "p = %s" % (p,)
+                    self.output.write("p = %s\n" % (p,))
                     max_node = node
             if max_node == -1:
                 max_node = node
